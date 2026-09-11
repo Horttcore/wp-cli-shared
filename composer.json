@@ -1,0 +1,15 @@
+{
+    "name": "ralfhortt/wp-cli-shared",
+    "description": "Shared support classes for Ralf Hortt WP-CLI packages",
+    "type": "library",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "RalfHortt\\WpCliShared\\": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
