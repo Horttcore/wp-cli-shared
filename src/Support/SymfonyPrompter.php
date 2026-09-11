@@ -128,20 +128,64 @@ final class SymfonyPrompter
             return FallbackPrompter::askMultiChoice($label, $choices);
         }
 
-        $question = new ChoiceQuestion(
-            $label . ' (comma-separated)',
-            $choices
-        );
-        $question->setMultiselect(true);
+        $question = new Question($label . ' (comma-separated, leave empty for none): ', '');
         $question->setAutocompleterValues($choices);
 
         $answer = self::helper()->ask(self::input(), self::output(), $question);
 
-        if (! is_array($answer)) {
+        if (! is_string($answer)) {
             return [];
         }
 
-        return array_values(array_map('strval', $answer));
+        return self::parseMultiChoiceInput($answer, $choices);
+    }
+
+    /**
+     * @param  array<int, string>  $choices
+     * @return array<int, string>
+     */
+    public static function parseMultiChoiceInput(string $answer, array $choices): array
+    {
+        $answer = trim($answer);
+
+        if ($answer === '') {
+            return [];
+        }
+
+        $parts = array_values(array_filter(array_map('trim', explode(',', $answer)), static fn (string $part): bool => $part !== ''));
+        $numericParts = array_values(array_filter($parts, 'ctype_digit'));
+        $useOneBasedIndexes = $numericParts !== []
+            && count($numericParts) === count($parts)
+            && ! in_array('0', $numericParts, true)
+            && max(array_map('intval', $numericParts)) <= count($choices);
+
+        $selected = [];
+
+        foreach ($parts as $part) {
+            if (ctype_digit($part)) {
+                $index = (int) $part;
+
+                if ($useOneBasedIndexes) {
+                    $index -= 1;
+                }
+
+                if (isset($choices[$index])) {
+                    $choice = $choices[$index];
+                } else {
+                    throw new \RuntimeException(sprintf('Value "%s" is invalid.', $part));
+                }
+            } elseif (in_array($part, $choices, true)) {
+                $choice = $part;
+            } else {
+                throw new \RuntimeException(sprintf('Value "%s" is invalid.', $part));
+            }
+
+            if (! in_array($choice, $selected, true)) {
+                $selected[] = $choice;
+            }
+        }
+
+        return $selected;
     }
 
     private static function helper(): QuestionHelper

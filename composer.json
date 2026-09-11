@@ -6,9 +6,25 @@
     "require": {
         "php": ">=8.2"
     },
+    "require-dev": {
+        "pestphp/pest": "^2.36"
+    },
     "autoload": {
         "psr-4": {
             "RalfHortt\\WpCliShared\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "RalfHortt\\WpCliShared\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "pest --colors=always"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
         }
     },
     "minimum-stability": "stable"
